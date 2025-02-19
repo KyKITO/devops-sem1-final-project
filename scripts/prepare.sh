@@ -2,13 +2,13 @@
 
 set -e
 
-DBHOST="localhost"
-DBPORT=5432
-DBUSER="validator"
-DBPASSWORD="val1dat0r"
+PGHOST="localhost"
+PGPORT=5432
+PGUSER="validator"
+PGPASSWORD="val1dat0r"
 DBNAME="project-sem-1"
 
-export DBHOST DBPORT DBUSER DBPASSWORD DBNAME
+export PGHOST PGPORT PGUSER PGPASSWORD DBNAME
 
 echo "Ожидаем готовность PostgreSQL"
 for i in {1..10}; do
@@ -20,18 +20,18 @@ for i in {1..10}; do
     sleep 2
 done
 
-if ! psql -U "$DBUSER" -h "$DBHOST" -p "$DBPORT" -d "$DBNAME" -c "\\q" &> /dev/null; then
+if ! psql -U "$PGUSER" -h "$PGHOST" -p "$PGPORT" -d "$DBNAME" -c "\\q" &> /dev/null; then
     echo "БД project-sem-1 не доступна."
 
     echo "Пытаемся подключиться через пользователя postgres"
-    DBUSER="postgres"
-    if ! psql -U "$DBUSER" -h "$DBHOST" -p "$DBPORT" -c "\\q" &> /dev/null; then
+    PGUSER="postgres"
+    if ! psql -U "$PGUSER" -h "$PGHOST" -p "$PGPORT" -c "\\q" &> /dev/null; then
         echo "Error: Could not connect to PostgreSQL as postgres."
         exit 1
     fi
 
     echo "Создание пользователя и БД"
-    psql -U "$DBUSER" -h "$DBHOST" -p "$DBPORT" <<-EOSQL
+    psql -U "$PGUSER" -h "$PGHOST" -p "$PGPORT" <<-EOSQL
     DO \$\$ BEGIN
       IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'validator') THEN
         CREATE USER validator WITH PASSWORD 'val1dat0r';
@@ -51,8 +51,8 @@ else
 fi
 
 echo "Создание таблицы prices"
-DBUSER="validator"
-psql -U "$DBUSER" -h "$DBHOST" -p "$DBPORT" -d "$DBNAME" <<-EOSQL
+PGUSER="validator"
+psql -U "$PGUSER" -h "$PGHOST" -p "$PGPORT" -d "$DBNAME" <<-EOSQL
   CREATE TABLE IF NOT EXISTS prices (
     id SERIAL PRIMARY KEY,
     product_id INT NOT NULL,
