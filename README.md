@@ -64,7 +64,7 @@ curl -X POST -F "file=@sample_data.zip" http://localhost:8080/api/v0/prices
 Отправка GET-запроса на скачивание записей из базы данных
 ```
 curl -X GET -o response.zip http://localhost:8080/api/v0/prices
-
+```
 ## Контакт
 
 Никита Кудухов
