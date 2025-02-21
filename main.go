@@ -44,7 +44,7 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/api/v0/prices", handleReq)
-	log.Println("Server has started")
+	log.Println("Server has started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -188,7 +188,6 @@ func processCSV(f *zip.File, totalItems *int, totalPrice *float64, totalCategori
 			Price:     price,
 		})
 
-		categorySet[category] = true
 	}
 
 	if len(rows) == 0 {
@@ -209,7 +208,7 @@ func processCSV(f *zip.File, totalItems *int, totalPrice *float64, totalCategori
 		}
 	}()
 
-	stmt, err := tx.Prepare("INSERT INTO prices (id, created_at, name, category, price) VALUES ($1, $2, $3, $4, $5)")
+	stmt, err := tx.Prepare("INSERT INTO prices (created_at, name, category, price) VALUES ($1, $2, $3, $4, $5)")
 	if err != nil {
 		log.Printf("Fail to prepare statement: %v\n", err)
 		return
@@ -278,18 +277,18 @@ func handleGet(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, zipFilePath)
 }
 
-func calculateStatistics(tx *sql.Tx) (int, int, float64, error) {
-	var totalItems int
+func calculateStatistics(tx *sql.Tx, totalItems int) (int, int, float64, error) {
 	var totalCategories int
 	var totalPrice float64
 
 	query := `
-		SELECT COUNT(*), COUNT(DISTINCT category), COALESCE(SUM(price), 0)
-		FROM prices
+	  SELECT COUNT(DISTINCT category), COALESCE(SUM(price), 0)
+	  FROM prices
 	`
-	err := tx.QueryRow(query).Scan(&totalItems, &totalCategories, &totalPrice)
+	err := tx.QueryRow(query).Scan(&totalCategories, &totalPrice)
 	if err != nil {
 		return 0, 0, 0, err
 	}
+
 	return totalItems, totalCategories, totalPrice, nil
 }
