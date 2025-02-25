@@ -152,7 +152,6 @@ func processCSV(f *zip.File, totalItems *int, totalPrice *float64, totalCategori
 	log.Printf("CSV Header: %v\n", header)
 
 	var rows []dataRow
-	categorySet := make(map[string]bool)
 
 	for {
 		record, err := reader.Read()
@@ -223,7 +222,7 @@ func processCSV(f *zip.File, totalItems *int, totalPrice *float64, totalCategori
 		}
 	}
 
-	*totalItems, *totalCategories, *totalPrice, err = calculateStatistics(tx)
+	*totalItems, *totalCategories, *totalPrice, err = calculateStatistics(tx, *totalItems)
 	if err != nil {
 		log.Printf("Fail to calculate statistics: %v\n", err)
 	}
